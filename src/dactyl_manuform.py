@@ -17,21 +17,25 @@ def rad2deg(rad: float) -> float:
 # ######################
 
 
+
 nrows = 5  # key rows
 ncols = 6  # key columns
 
-alpha = pi / 12.0  # curvature of the columns
-beta = pi / 36.0  # curvature of the rows
+#alpha = pi / 12.0  # curvature of the columns
+alpha = pi / 7.0  # curvature of the columns
+beta = pi / 1000.0  # curvature of the rows
 centerrow = nrows - 3  # controls front_back tilt
-centercol = 3  # controls left_right tilt / tenting (higher number is more tenting)
-tenting_angle = pi / 12.0  # or, change this for more precise tenting control
+centercol = 3.5  # controls left_right tilt / tenting (higher number is more tenting)
+tenting_angle = 0 #pi / 12.0  # or, change this for more precise tenting control
 
 hot_swap = False
+show_caps = False
+
 
 if nrows > 5:
     column_style = "orthographic"
 else:
-    column_style = "standard"  # options include :standard, :orthographic, and :fixed
+    column_style = "fixed"  # options include :standard, :orthographic, and :fixed
 
 # column_style='fixed'
 
@@ -51,7 +55,7 @@ keyboard_z_offset = (
 )
 
 extra_width = 2.5  # extra space between the base of keys# original= 2
-extra_height = 1.0  # original= 0.5
+extra_height = 0.5  # original= 0.5
 
 wall_z_offset = -15  # length of the first downward_sloping part of the wall (negative)
 wall_xy_offset = 5  # offset in the x and/or y direction for the first downward_sloping part of the wall (negative)
@@ -79,8 +83,8 @@ lastcol = ncols - 1
 ## Switch Hole ##
 #################
 
-keyswitch_height = 14.4  ## Was 14.1, then 14.25
-keyswitch_width = 14.4
+keyswitch_height = 14.25  ## Was 14.1, then 14.25
+keyswitch_width = 14.25
 
 sa_profile_key_height = 12.7
 
@@ -138,16 +142,17 @@ sa_double_length = 37.5
 
 def sa_cap(Usize=1):
     # MODIFIED TO NOT HAVE THE ROTATION.  NEEDS ROTATION DURING ASSEMBLY
-    sa_length = 18.25
+    sa_length = 18
 
     bw2 = Usize * sa_length / 2
     bl2 = sa_length / 2
     m = 0
-    pw2 = 6 * Usize + 1
-    pl2 = 6
+    pw2 = 6.5 * Usize + 1
+    pl2 = 7.5
 
-    if Usize == 1:
-        m = 17 / 2
+# this is only really true for the DA caps I think
+#    if Usize == 1:
+#        m = 17 / 2
 
     k1 = sl.polygon([[bw2, bl2], [bw2, -bl2], [-bw2, -bl2], [-bw2, bl2]])
     k1 = sl.linear_extrude(height=0.1, twist=0, convexity=0, center=True)(k1)
@@ -200,9 +205,13 @@ def rotate_around_y(position, angle):
 
 cap_top_height = plate_thickness + sa_profile_key_height
 row_radius = ((mount_height + extra_height) / 2) / (np.sin(alpha / 2)) + cap_top_height
+print("row_radius")
+print(row_radius)
 column_radius = (
     ((mount_width + extra_width) / 2) / (np.sin(beta / 2))
 ) + cap_top_height
+print("col_radius")
+print(column_radius)
 column_x_delta = -1 - column_radius * np.sin(beta)
 column_base_angle = beta * (centercol - 2)
 
@@ -287,9 +296,8 @@ def key_holes():
     holes = []
     for column in range(ncols):
         for row in range(nrows):
-            if (column in [2, 3]) or (not row == lastrow):
+            if (not row == lastrow):
                 holes.append(key_place(hole, column, row))
-
     return sl.union()(*holes)
 
 
@@ -297,7 +305,7 @@ def caps():
     caps = []
     for column in range(ncols):
         for row in range(nrows):
-            if (column in [2, 3]) or (not row == lastrow):
+            if (not row == lastrow):
                 caps.append(key_place(sa_cap(), column, row))
 
     return sl.union()(*caps)
@@ -307,7 +315,7 @@ def caps():
 ## Web Connectors ##
 ####################
 
-web_thickness = 3.5
+web_thickness = 4
 post_size = 0.1
 
 
@@ -478,7 +486,7 @@ def double_plate():
 
 def thumbcaps():
     t1 = thumb_1x_layout(sa_cap(1))
-    t15 = thumb_15x_layout(sl.rotate(pi / 2, [0, 0, 1])(sa_cap(1.5)))
+    t15 = thumb_15x_layout(sl.rotate(pi / 2, [0, 0, 1])(sa_cap(1)))
     return t1 + t15
 
 
@@ -1240,20 +1248,35 @@ def wire_posts():
     return shape
 
 
-def model_right():
-    shape = sl.union()(key_holes(), connectors(), thumb(), thumb_connectors(),)
-
-    s2 = sl.union()(case_walls(), screw_insert_outers(), teensy_holder(), usb_holder(),)
-
-    s2 = sl.difference()(s2, rj9_space(), usb_holder_hole(), screw_insert_holes())
-
-    shape = sl.union()(shape, s2, rj9_holder(), wire_posts(),)
-
-    shape -= sl.translate([0, 0, -20])(sl.cube([350, 350, 40], center=True))
+def model_right_thumbs():
+    shape = sl.union()(thumb(), thumb_connectors())
+    if show_caps:
+        shape += sl.union()(thumbcaps())
     return shape
 
 
+def model_right_fingeys():
+    #shape = sl.union()(key_holes(), connectors(), thumb(), thumb_connectors())
+    shape = sl.union()(key_holes(), connectors())
+    if show_caps:
+        shape += sl.union()(caps())
+
+
+    return shape
+
+
+
+def model_right():
+
+    #shape = sl.union()(key_holes(), connectors(), thumb(), thumb_connectors())
+    shape = sl.union()(key_holes(), connectors())
+
+    return model_right_fingeys();
+
+
 sl.scad_render_to_file(model_right(), path.join(r"..", "things", r"right_py.scad"))
+sl.scad_render_to_file(model_right_fingeys(), path.join(r"..", "things", r"right_fingers_py.scad"))
+sl.scad_render_to_file(model_right_thumb(), path.join(r"..", "things", r"right_thumbs_py.scad"))
 
 sl.scad_render_to_file(
     sl.mirror([-1, 0, 0])(model_right()), path.join(r"..", "things", r"left_py.scad")
