@@ -7,4 +7,9 @@
 .lein-*
 *.gcode
 *.scad
+*.stl
 /target
+
+*.swp
+*.pyc
+*__pycache__
