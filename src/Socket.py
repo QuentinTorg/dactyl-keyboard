@@ -1,10 +1,48 @@
+from abc import ABC, abstractmethod
 import solid as sl
 
-import TransformUtils
+import TransformUtils as utils
 
 # top, bottom, left, right are relative to the user sitting at the keyboard
 
-class CherryMX:
+# Socket is an abstract class that represents all implemented socket types
+# self.__corners list must contain the outer corner locations of the socket. The order starting
+#     with top face, rotating from top left around socket clockwise, then bottom face, rotating
+#     from top left around the socket clockwise
+# self.__socket is the solidpython object
+class Socket(ABC):
+    @abstractmethod
+    def __init__(self, config):
+        raise NotImplementedError()
+
+    # child __init__() functions responsible for populating self.__socket and self.__corners
+    def solid(self):
+        return self.__socket
+
+    def translate(self, x=0, y=0, z=0):
+        self.__socket = sl.translate([x,y,z])(self.__socket)
+        self.__corners = utils.translate_points(self.__corners, [x,y,z])
+
+    def rotate(self, x=0, y=0, z=0, degrees=True):
+        self.__socket = sl.rotate([x, y, z])(self.__socket)
+        self.__corners = utils.rotate_points(self.__corners, [x,y,z], degrees)
+
+    def corners(self):
+        #TODO this is not finalized output format yet
+        # maybe need to apply multiple groups of corners
+        # only returns the current corner locations
+        c = {}
+        c['upper_top_left'] = self.__corners[0]
+        c['upper_top_right'] = self.__corners[1]
+        c['upper_bottom_right'] = self.__corners[2]
+        c['upper_bottom_left'] = self.__corners[3]
+        c['lower_top_left'] = self.__corners[4]
+        c['lower_top_right'] = self.__corners[5]
+        c['lower_bottom_right'] = self.__corners[6]
+        c['lower_bottom_left'] = self.__corners[7]
+        return c
+
+class CherryMXSocket(Socket):
     def __init__(self, config):
         width = config.getfloat('overall_width')
         height = config.getfloat('overall_height')
@@ -22,7 +60,6 @@ class CherryMX:
         # calculated numbers
         border_width = (width - switch_width) / 2
         border_height = (height - switch_height) / 2
-
 
         ### Make Geometry ###
         # make two of the four walls, b/c rotationally symmetric
@@ -45,7 +82,7 @@ class CherryMX:
         socket = socket_half + sl.rotate(180, [0, 0, 1])(socket_half)
 
         # add hot swap socket
-        # todo, configure for different hot swap socket types
+        # TODO, configure for different hot swap socket types
         if hot_swap:
             #TODO: fix the hot swap socket. currently not parameterized
             # missing the stl file in this repo
@@ -62,34 +99,12 @@ class CherryMX:
         bottom_z = 0.0
         half_width = width/2
         half_height = height/2
+        # self.__corners must be loaded in this order
         self.__corners = [[-half_width,  half_height, top_z],
-                        [ half_width,  half_height, top_z],
-                        [ half_width, -half_height, top_z],
-                        [-half_width, -half_height, top_z],
-                        [-half_width,  half_height, bottom_z],
-                        [ half_width,  half_height, bottom_z],
-                        [ half_width, -half_height, bottom_z],
-                        [-half_width, -half_height, bottom_z]]
-
-    def solid(self):
-        return self.__socket
-
-    def translate(self, x=0, y=0, z=0):
-        self.__socket = sl.translate([x,y,z])(self.__socket)
-        self.__corners = TransformUtils.translate_points(self.__corners, [x,y,z])
-
-    def rotate(self, x=0, y=0, z=0, degrees=True):
-        self.__socket = sl.rotate([x, y, z])(self.__socket)
-        self.__corners = TransformUtils.rotate_points(self.__corners, [x,y,z], degrees)
-
-    def corners(self):
-        c = {}
-        c['upper_top_left'] = self.__corners[0]
-        c['upper_top_right'] = self.__corners[1]
-        c['upper_bottom_right'] = self.__corners[2]
-        c['upper_bottom_left'] = self.__corners[3]
-        c['lower_top_left'] = self.__corners[4]
-        c['lower_top_right'] = self.__corners[5]
-        c['lower_bottom_right'] = self.__corners[6]
-        c['lower_bottom_left'] = self.__corners[7]
-        return c
+                          [ half_width,  half_height, top_z],
+                          [ half_width, -half_height, top_z],
+                          [-half_width, -half_height, top_z],
+                          [-half_width,  half_height, bottom_z],
+                          [ half_width,  half_height, bottom_z],
+                          [ half_width, -half_height, bottom_z],
+                          [-half_width, -half_height, bottom_z]]
