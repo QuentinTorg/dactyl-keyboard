@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 import solid as sl
+import numpy as np
+from functools import partialmethod
 
 # base class for all solids
 class Solid(ABC):
@@ -25,3 +27,32 @@ class Solid(ABC):
     @abstractmethod
     def corners(self):
         raise Exception(f'{self.__class__.__name__}.corners() is an abstract method and must be overridden by a child class.')
+
+
+
+class Hull(object):
+    def __init__(self, corners):
+        """
+        sorted corner ordering
+           3-------7
+          /|      /|
+         / |     / | Y
+        2--|----6  |
+        |  1----|--5
+        | /     | / Z
+        0-------4
+            X
+        """
+        self.corners = np.array(sorted(corners)).reshape((2,2,2,3))
+        self._output_shape = (4,3)
+
+    def _get_side(self, slice):
+        coords =  self.corners[slice].reshape(self._output_shape)
+        return set(tuple(x) for x in coords)
+
+    right  = partialmethod(_get_side, np.s_[1,:,:])
+    left   = partialmethod(_get_side, np.s_[0,:,:])
+    top    = partialmethod(_get_side, np.s_[:,1,:])
+    bottom = partialmethod(_get_side, np.s_[:,0,:])
+    front  = partialmethod(_get_side, np.s_[:,:,1])
+    back   = partialmethod(_get_side, np.s_[:,:,0])
