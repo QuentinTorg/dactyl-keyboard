@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import solid as sl
+from pathlib import Path
 
 import TransformUtils as utils
 from GeometryBase import Solid
@@ -103,11 +104,11 @@ class CherryMXSocket(Socket):
             #TODO: fix the hot swap socket. currently not parameterized
             # missing the stl file in this repo
 
-            hot_swap_socket = sl.import_(path.join(r"..", "geometry", r"hot_swap_plate.stl"))
+            hot_swap_socket = sl.import_(Path.cwd().parent / "geometry" / "hot_swap_plate.stl")
             hot_swap_socket = sl.translate([0, 0, thickness - 5.25])(hot_swap_socket)
             socket = sl.union()(socket, hot_swap_socket)
 
-        self.__solid= socket
+        self.__solid = socket
 
         # corners start in top left, then work their way around
         #
