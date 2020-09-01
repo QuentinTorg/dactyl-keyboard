@@ -20,7 +20,7 @@ def rotate_point(point, eulers, degrees=True):
     return rotate_points(point, eulers, degrees)
 
 
-def translate_point(point, t):
+def translate_point(p, t):
     assert len(t) == 3
     assert len(p) == 3
     return [p[0] + t[0],
