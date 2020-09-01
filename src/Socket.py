@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import solid as sl
 
 import TransformUtils as utils
+from GeometryBase import Solid
 
 # top, bottom, left, right are relative to the user sitting at the keyboard
 
@@ -10,37 +11,52 @@ import TransformUtils as utils
 #     with top face, rotating from top left around socket clockwise, then bottom face, rotating
 #     from top left around the socket clockwise
 # self.__socket is the solidpython object
-class Socket(ABC):
+class Socket(Solid):
     @abstractmethod
-    def __init__(self, config):
-        raise NotImplementedError()
-
-    # child __init__() functions responsible for populating self.__socket and self.__corners
-    def solid(self):
-        return self.__socket
-
-    def translate(self, x=0, y=0, z=0):
-        self.__socket = sl.translate([x,y,z])(self.__socket)
-        self.__corners = utils.translate_points(self.__corners, [x,y,z])
-
-    def rotate(self, x=0, y=0, z=0, degrees=True):
-        self.__socket = sl.rotate([x, y, z])(self.__socket)
-        self.__corners = utils.rotate_points(self.__corners, [x,y,z], degrees)
+    def __init__(self, solid, corners):
+        if type(self) is Socket:
+            raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
+        self.__solid = solid
+        self.__corners = corners
+        super(Socket, self).__init__(self.__solid, self.__corners)
 
     def corners(self):
         #TODO this is not finalized output format yet
         # maybe need to apply multiple groups of corners
         # only returns the current corner locations
         c = {}
-        c['upper_top_left'] = self.__corners[0]
-        c['upper_top_right'] = self.__corners[1]
-        c['upper_bottom_right'] = self.__corners[2]
-        c['upper_bottom_left'] = self.__corners[3]
-        c['lower_top_left'] = self.__corners[4]
-        c['lower_top_right'] = self.__corners[5]
-        c['lower_bottom_right'] = self.__corners[6]
-        c['lower_bottom_left'] = self.__corners[7]
+        c['top'] = set([
+            self.__corners[0],
+            self.__corners[1],
+            self.__corners[2],
+            self.__corners[3]])
+        c['bottom'] = set([
+            self.__corners[4],
+            self.__corners[5],
+            self.__corners[6],
+            self.__corners[7]])
+        c['left'] = set([
+            self.__corners[0],
+            self.__corners[3],
+            self.__corners[4],
+            self.__corners[7]])
+        c['right'] = set([
+            self.__corners[1],
+            self.__corners[2],
+            self.__corners[5],
+            self.__corners[6]])
+        c['front'] = set([
+            self.__corners[0],
+            self.__corners[1],
+            self.__corners[4],
+            self.__corners[5]])
+        c['back'] = set([
+            self.__corners[2],
+            self.__corners[3],
+            self.__corners[6],
+            self.__corners[7]])
         return c
+
 
 class CherryMXSocket(Socket):
     def __init__(self, config):
@@ -91,7 +107,7 @@ class CherryMXSocket(Socket):
             hot_swap_socket = sl.translate([0, 0, thickness - 5.25])(hot_swap_socket)
             socket = sl.union()(socket, hot_swap_socket)
 
-        self.__socket = socket
+        self.__solid= socket
 
         # corners start in top left, then work their way around
         #
@@ -108,3 +124,6 @@ class CherryMXSocket(Socket):
                           [ half_width,  half_height, bottom_z],
                           [ half_width, -half_height, bottom_z],
                           [-half_width, -half_height, bottom_z]]
+
+        # set the base class parameters
+        super(CherryMXSocket, self).__init__(self.__solid, self.__corners)
