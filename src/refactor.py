@@ -9,7 +9,7 @@ import keycap
 config = configparser.ConfigParser()
 config.read('default_config.ini')
 
-intermediates_dir = Path.cwd().parent / 'intermediates'
+intermediates_dir = Path(__file__).resolve().parent.parent / 'intermediates'
 intermediates_dir.mkdir(exist_ok=True)
 
 # key switch socket
