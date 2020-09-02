@@ -6,6 +6,9 @@ from geometry_base import Solid
 import transform_utils as utils
 
 class Keycap(Solid):
+    # when adding new keycaps, they should be oriented so the mounting feature is aligned with the Z axis
+    # the bottom face should be offset from the XY plane by the same distance that they would be offset from
+    # a mounting plate if they were plate mounted switches
     @abstractmethod
     def __init__(self, solid, corners):
         if type(self) is Keycap:
@@ -17,6 +20,8 @@ class Keycap(Solid):
 class OEM(Keycap):
     def __init__(self, r, u=1):
         key_pitch = 19.0 # width between keys on standard board
+
+        vertical_offset = 5.5 # vertical height from plate mount when mounted on switch
         bottom_width = 18.0 + key_pitch * (u-1);
         bottom_length = 18.0;
 
@@ -87,8 +92,11 @@ class OEM(Keycap):
 
         key_cap = key_cap - curve_cut
         key_cap = sl.translate([0, bottom_length/2, 0])(key_cap)
+        key_cap -= curve_cut
+        key_cap = sl.translate([0, 0, vertical_offset])(key_cap)
+        key_cap = sl.color([50 / 255, 175 / 255, 255 / 255, 1])(key_cap)
 
-        self.__solid = key_cap - curve_cut
+        self.__solid = key_cap
         self.__corners = []
         # set the base class parameters
         super(Keycap, self).__init__(self.__solid, self.__corners)

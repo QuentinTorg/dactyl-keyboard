@@ -28,6 +28,38 @@ class Solid(ABC):
     def corners(self):
         raise Exception(f'{self.__class__.__name__}.corners() is an abstract method and must be overridden by a child class.')
 
+class Assemly(ABC):
+    @abstractmethod
+    def __init__(self, parts, corners):
+        if type(self) is Assembly:
+            raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
+        self.__parts = parts
+        self.__corners = corners
+
+    # child __init__() functions responsible for populating self.__solid and self.__corners
+    def solid(self):
+        out_solid = None
+        for part in self.__parts.values():
+            out_solid += part.solid()
+        return out_solid
+
+    def translate(self, x=0, y=0, z=0):
+        self.__corners = utils.translate_points(self.__corners, [x,y,z])
+        for part in self.__parts.values():
+            part.translate(x, y, z)
+
+    def rotate(self, x=0, y=0, z=0, degrees=True):
+        self.__corners = utils.rotate_points(self.__corners, [x,y,z], degrees)
+        for part in self.__parts.values():
+            part.rotate(x, y, z)
+
+    def corners(self, part_name=None):
+        # return assembly corners if no part specified
+        if part_name == None:
+            return self.__corners
+        # return the corners of the requested part
+        return self.__parts[part_name].corners()
+
 
 
 class Hull(object):
