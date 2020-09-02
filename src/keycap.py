@@ -10,12 +10,12 @@ class Keycap(Solid):
     # the bottom face should be offset from the XY plane by the same distance that they would be offset from
     # a mounting plate if they were plate mounted switches
     @abstractmethod
-    def __init__(self, solid, corners):
+    def __init__(self, solid, anchors):
         if type(self) is Keycap:
             raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
         self.__solid = solid
-        self.__corners = corners
-        super(Keycap, self).__init__(self.__solid, self.__corners)
+        self.__anchors = anchors
+        super(Keycap, self).__init__(self.__solid, self.__anchors)
 
 class OEM(Keycap):
     def __init__(self, r, u=1):
@@ -97,12 +97,12 @@ class OEM(Keycap):
         key_cap = sl.color([50 / 255, 175 / 255, 255 / 255, 1])(key_cap)
 
         self.__solid = key_cap
-        self.__corners = []
+        self.__anchors = []
         # set the base class parameters
-        super(Keycap, self).__init__(self.__solid, self.__corners)
+        super(Keycap, self).__init__(self.__solid, self.__anchors)
 
 
-    def corners(self):
+    def anchors(self):
         return {}
 
 

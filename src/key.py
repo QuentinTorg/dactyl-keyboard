@@ -31,7 +31,7 @@ class Key(Assembly):
             raise Exception('keycap type ' + config.get('keycap_type') + ' not implemented')
 
         # if created correclty, the key switch and key cap should already be aligned to each other
-        super(Key, self).__init__(self.__parts, self.__corners)
+        super(Key, self).__init__(self.__parts, self.__anchors)
 
 
 # FaceAlignedKeys will have the faces forming a smooth curve on the keybaord regardless of switch and keycap type
@@ -40,7 +40,7 @@ class FaceAlignedKey(Key)
         # this will load the self.__parts dict according to config
         super(FaceAlignedKey, self).__init__(config, socket_config, r, u)
         # set the assembly corner anchors to top of the socket
-        self.__corners = self.corners('keycap')['top']
+        self.__anchors = self.anchors('keycap')['top']
 
         # reorient the key and switch together so the top face of the keycap is centered
         # on the z axis and coplanar with the xy plane
@@ -58,5 +58,5 @@ class SocketAlignedKey(Key)
         super(FaceAlignedKey, self).__init__(config, socket_config, r, u)
 
         # set the assembly corner anchors to top of the socket
-        self.__corners = corners('socket')['top']
+        self.__anchors = anchors('socket')['top']
         # no additional alignment required

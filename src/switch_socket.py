@@ -8,7 +8,7 @@ from geometry_base import Solid
 # top, bottom, left, right are relative to the user sitting at the keyboard
 
 # Socket is an abstract class that represents all implemented socket types
-# self.__corners list must contain the outer corner locations of the socket. The order starting
+# self.__anchors list must contain the outer corner locations of the socket. The order starting
 #     with top face, rotating from top left around socket clockwise, then bottom face, rotating
 #     from top left around the socket clockwise
 # self.__socket is the solidpython object
@@ -16,48 +16,48 @@ class Socket(Solid):
     # when adding new sockets, the top of the socket should be coplanar with the X,Y plane
     # when the switch is installed, the keycap mounting feature should align with the Z axis
     @abstractmethod
-    def __init__(self, solid, corners):
+    def __init__(self, solid, anchors):
         if type(self) is Socket:
             raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
         self.__solid = solid
-        self.__corners = corners
-        super(Socket, self).__init__(self.__solid, self.__corners)
+        self.__anchors = anchors
+        super(Socket, self).__init__(self.__solid, self.__anchors)
 
-    def corners(self):
+    def anchors(self):
         #TODO this is not finalized output format yet
-        # maybe need to apply multiple groups of corners
+        # maybe need to apply multiple groups of anchors
         # only returns the current corner locations
         c = {}
         c['top'] = set([
-            self.__corners[0],
-            self.__corners[1],
-            self.__corners[2],
-            self.__corners[3]])
+            self.__anchors[0],
+            self.__anchors[1],
+            self.__anchors[2],
+            self.__anchors[3]])
         c['bottom'] = set([
-            self.__corners[4],
-            self.__corners[5],
-            self.__corners[6],
-            self.__corners[7]])
+            self.__anchors[4],
+            self.__anchors[5],
+            self.__anchors[6],
+            self.__anchors[7]])
         c['left'] = set([
-            self.__corners[0],
-            self.__corners[3],
-            self.__corners[4],
-            self.__corners[7]])
+            self.__anchors[0],
+            self.__anchors[3],
+            self.__anchors[4],
+            self.__anchors[7]])
         c['right'] = set([
-            self.__corners[1],
-            self.__corners[2],
-            self.__corners[5],
-            self.__corners[6]])
+            self.__anchors[1],
+            self.__anchors[2],
+            self.__anchors[5],
+            self.__anchors[6]])
         c['front'] = set([
-            self.__corners[0],
-            self.__corners[1],
-            self.__corners[4],
-            self.__corners[5]])
+            self.__anchors[0],
+            self.__anchors[1],
+            self.__anchors[4],
+            self.__anchors[5]])
         c['back'] = set([
-            self.__corners[2],
-            self.__corners[3],
-            self.__corners[6],
-            self.__corners[7]])
+            self.__anchors[2],
+            self.__anchors[3],
+            self.__anchors[6],
+            self.__anchors[7]])
         return c
 
 
@@ -112,14 +112,14 @@ class CherryMXSocket(Socket):
 
         self.__solid = socket
 
-        # corners start in top left, then work their way around
+        # anchors start in top left, then work their way around
         #
         top_z = 0.0
         bottom_z = -thickness
         half_width = width/2.0
         half_length = length/2.0
-        # self.__corners must be loaded in this order
-        self.__corners = [[-half_width,  half_length, top_z],
+        # self.__anchors must be loaded in this order
+        self.__anchors = [[-half_width,  half_length, top_z],
                           [ half_width,  half_length, top_z],
                           [ half_width, -half_length, top_z],
                           [-half_width, -half_length, top_z],
@@ -129,4 +129,4 @@ class CherryMXSocket(Socket):
                           [-half_width, -half_length, bottom_z]]
 
         # set the base class parameters
-        super(CherryMXSocket, self).__init__(self.__solid, self.__corners)
+        super(CherryMXSocket, self).__init__(self.__solid, self.__anchors)

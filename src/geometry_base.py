@@ -6,37 +6,37 @@ from functools import partialmethod
 # base class for all solids
 class Solid(ABC):
     @abstractmethod
-    def __init__(self, solid, corners):
+    def __init__(self, solid, anchors):
         if type(self) is Solid:
             raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
         self.__solid = solid
-        self.__corners = corners
+        self.__anchors = anchors
 
-    # child __init__() functions responsible for populating self.__solid and self.__corners
+    # child __init__() functions responsible for populating self.__solid and self.__anchors
     def solid(self):
         return self.__solid
 
     def translate(self, x=0, y=0, z=0):
         self.__solid = sl.translate([x,y,z])(self.__solid)
-        self.__corners = utils.translate_points(self.__corners, [x,y,z])
+        self.__anchors = utils.translate_points(self.__anchors, [x,y,z])
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
         self.__solid = sl.rotate([x, y, z])(self.__solid)
-        self.__corners = utils.rotate_points(self.__corners, [x,y,z], degrees)
+        self.__anchors = utils.rotate_points(self.__anchors, [x,y,z], degrees)
 
     @abstractmethod
-    def corners(self):
-        raise Exception(f'{self.__class__.__name__}.corners() is an abstract method and must be overridden by a child class.')
+    def anchors(self):
+        raise Exception(f'{self.__class__.__name__}.anchors() is an abstract method and must be overridden by a child class.')
 
 class Assemly(ABC):
     @abstractmethod
-    def __init__(self, parts, corners):
+    def __init__(self, parts, anchors):
         if type(self) is Assembly:
             raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
         self.__parts = parts
-        self.__corners = corners
+        self.__anchors = anchors
 
-    # child __init__() functions responsible for populating self.__solid and self.__corners
+    # child __init__() functions responsible for populating self.__solid and self.__anchors
     def solid(self):
         out_solid = None
         for part in self.__parts.values():
@@ -44,21 +44,21 @@ class Assemly(ABC):
         return out_solid
 
     def translate(self, x=0, y=0, z=0):
-        self.__corners = utils.translate_points(self.__corners, [x,y,z])
+        self.__anchors = utils.translate_points(self.__anchors, [x,y,z])
         for part in self.__parts.values():
             part.translate(x, y, z)
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
-        self.__corners = utils.rotate_points(self.__corners, [x,y,z], degrees)
+        self.__anchors = utils.rotate_points(self.__anchors, [x,y,z], degrees)
         for part in self.__parts.values():
             part.rotate(x, y, z)
 
-    def corners(self, part_name=None):
-        # return assembly corners if no part specified
+    def anchors(self, part_name=None):
+        # return assembly anchors if no part specified
         if part_name == None:
-            return self.__corners
-        # return the corners of the requested part
-        return self.__parts[part_name].corners()
+            return self.__anchors
+        # return the anchors of the requested part
+        return self.__parts[part_name].anchors()
 
 
 
