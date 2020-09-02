@@ -119,7 +119,7 @@ def single_plate(cylinder_segments=100):
 
     if hot_swap:
         hot_swap_socket = sl.import_(
-            path.join(r"..", "geometry", r"hot_swap_plate.stl")
+            path.join(r"../..", "geometry", r"hot_swap_plate.stl")
         )
         hot_swap_socket = sl.translate([0, 0, plate_thickness - 5.25])(hot_swap_socket)
 
@@ -1253,10 +1253,10 @@ def model_right():
     return shape
 
 
-sl.scad_render_to_file(model_right(), path.join(r"..", "things", r"right_py.scad"))
+sl.scad_render_to_file(model_right(), path.join(r"../..", "things", r"right_py.scad"))
 
 sl.scad_render_to_file(
-    sl.mirror([-1, 0, 0])(model_right()), path.join(r"..", "things", r"left_py.scad")
+    sl.mirror([-1, 0, 0])(model_right()), path.join(r"../..", "things", r"left_py.scad")
 )
 
 
@@ -1277,4 +1277,4 @@ def baseplate():
     return sl.projection(cut=True)(shape)
 
 
-sl.scad_render_to_file(baseplate(), path.join(r"..", "things", r"plate_py.scad"))
+sl.scad_render_to_file(baseplate(), path.join(r"../..", "things", r"plate_py.scad"))

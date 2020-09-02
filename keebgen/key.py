@@ -1,10 +1,8 @@
-from abc import ABC, abstractmethod
-import solid as sl
+from abc import abstractmethod
 
-import transform_utils as utils
-from geometry_base import Assembly
-import switch_socket
-import keycap
+from .geometry_base import Assembly
+from . import switch_socket
+from . import keycap
 
 # different Key subclasses will exist depending on the desired alignment
 # alignment is driven by where the anchor points are placed
@@ -35,7 +33,7 @@ class Key(Assembly):
 
 
 # FaceAlignedKeys will have the faces forming a smooth curve on the keybaord regardless of switch and keycap type
-class FaceAlignedKey(Key)
+class FaceAlignedKey(Key):
     def __init__(self, config, socket_config, r, u=1):
         # this will load the self.__parts dict according to config
         super(FaceAlignedKey, self).__init__(config, socket_config, r, u)
@@ -52,11 +50,11 @@ class FaceAlignedKey(Key)
 
 # simplest case, the switches are aligned based on the socket.
 # should be used for plate mount boards
-class SocketAlignedKey(Key)
+class SocketAlignedKey(Key):
     def __init__(self, config, socket_config, r, u=1):
         # this will load the self.__parts dict according to config
         super(FaceAlignedKey, self).__init__(config, socket_config, r, u)
 
         # set the assembly corner anchors to top of the socket
-        self.__anchors = anchors('socket')['top']
+        self.__anchors = self.anchors('socket')['top']
         # no additional alignment required

@@ -1,9 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import numpy as np
 import solid as sl
 
-from geometry_base import Solid
-import transform_utils as utils
+from .geometry_base import Solid
+from . import transform_utils as utils
 
 class Keycap(Solid):
     # when adding new keycaps, they should be oriented so the mounting feature is aligned with the Z axis

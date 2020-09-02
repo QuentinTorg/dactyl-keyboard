@@ -12,7 +12,7 @@ def rad2deg(rad: float) -> float:
 # can rotate single point or N points
 # 3 vecotr, or 3xN vector of points
 def rotate_points(points, eulers, degrees=True):
-    r = Rotation.from_euler('xyz', eulers, degrees=True)
+    r = Rotation.from_euler('xyz', eulers, degrees=degrees)
     return r.apply(points)
 
 # for convenience to match translation syntax

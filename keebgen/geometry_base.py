@@ -28,7 +28,7 @@ class Solid(ABC):
     def anchors(self):
         raise Exception(f'{self.__class__.__name__}.anchors() is an abstract method and must be overridden by a child class.')
 
-class Assemly(ABC):
+class Assembly(ABC):
     @abstractmethod
     def __init__(self, parts, anchors):
         if type(self) is Assembly:
