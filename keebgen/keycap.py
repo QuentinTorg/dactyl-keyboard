@@ -2,21 +2,14 @@ from abc import abstractmethod
 import numpy as np
 import solid as sl
 
-from .geometry_base import Solid
+from .geometry_base import Solid, Hull
 from . import transform_utils as utils
 
-class Keycap(Solid):
-    # when adding new keycaps, they should be oriented so the mounting feature is aligned with the Z axis
-    # the bottom face should be offset from the XY plane by the same distance that they would be offset from
-    # a mounting plate if they were plate mounted switches
-    @abstractmethod
-    def __init__(self):
-        super(Keycap, self).__init__()
+# when adding new keycaps, they should be oriented so the mounting feature is aligned with the Z axis
+# the bottom face should be offset from the XY plane by the same distance that they would be offset from
+# a mounting plate if they were plate mounted switches
 
-    def anchors(self):
-        return self._anchors
-
-class OEM(Keycap):
+class OEM(Solid):
     def __init__(self, r, u=1):
         super(OEM, self).__init__()
         key_pitch = 19.0 # width between keys on standard board
@@ -72,20 +65,18 @@ class OEM(Keycap):
         top_corners = utils.rotate_points(top_corners, [top_face_angle, 0, 0])
         top_corners = utils.translate_points(top_corners, [0, -top_offset_front, top_front_height])
 
-        self._anchors = top_corners + bottom_corners
+        corners = top_corners + bottom_corners
         # faces must be numbered clockwise when looking at exterior
-        key_faces = [[2, 3, 0, 1], # bottom
+        key_faces = [[2, 3, 0, 1], # top
                      [1, 0, 4, 5], # front
-                     [5, 4, 7, 6], # top
+                     [5, 4, 7, 6], # bottom
                      [2, 1, 5, 6], # right
                      [3, 2, 6, 7], # back
                      [0, 3, 7, 4]] # left
 
-        key_cap = sl.polyhedron(self._anchors, key_faces)
-
+        key_cap = sl.polyhedron(corners, key_faces)
 
         top_curve_radius = (top_curve_depth**2 + (top_width/2)**2)/(2 * top_curve_depth)
-
         curve_cut = sl.cylinder(top_curve_radius, bottom_length*2, center=True, segments=100)
         curve_cut = sl.rotate([90+top_face_angle, 0, 0])(curve_cut)
         curve_cut = sl.translate([0,-top_offset_front,top_curve_radius+top_front_height-top_curve_depth])(curve_cut)
@@ -96,13 +87,6 @@ class OEM(Keycap):
         key_cap = sl.translate([0, 0, vertical_offset])(key_cap)
         key_cap = sl.color([50 / 255, 175 / 255, 255 / 255, 1])(key_cap)
 
+        # setting the % modifier makes it render visually in openscad, but not when exporting to stl
         self._solid = key_cap.set_modifier('%')
-        self._anchors = []
-
-
-    def anchors(self):
-        return {}
-
-
-
-
+        self._anchors = Hull(corners)

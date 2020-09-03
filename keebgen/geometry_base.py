@@ -3,6 +3,8 @@ import solid as sl
 import numpy as np
 from functools import partialmethod
 
+from . import transform_utils as utils
+
 # base class for all solids
 class Solid(ABC):
     @abstractmethod
@@ -15,15 +17,14 @@ class Solid(ABC):
 
     def translate(self, x=0, y=0, z=0):
         self._solid = sl.translate([x,y,z])(self._solid)
-        self._anchors = utils.translate_points(self._anchors, [x,y,z])
+        self._anchors.translate(x,y,z)
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
         self._solid = sl.rotate([x, y, z])(self._solid)
-        self._anchors = utils.rotate_points(self._anchors, [x,y,z], degrees)
+        self._anchors.rotate(x,y,z,degrees)
 
-    @abstractmethod
     def anchors(self):
-        pass
+        return self._anchors
 
 class Assembly(ABC):
     @abstractmethod
@@ -38,12 +39,12 @@ class Assembly(ABC):
         return out_solid
 
     def translate(self, x=0, y=0, z=0):
-        self._anchors = utils.translate_points(self._anchors, [x,y,z])
+        self._anchors.translate(x,y,z)
         for part in self._parts.values():
             part.translate(x, y, z)
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
-        self._anchors = utils.rotate_points(self._anchors, [x,y,z], degrees)
+        self._anchors.rotate(x,y,z,degrees)
         for part in self._parts.values():
             part.rotate(x, y, z)
 
@@ -55,7 +56,7 @@ class Assembly(ABC):
         return self._parts[part_name].anchors()
 
 
-
+# top, bottom, left, right are relative to the user sitting at the keyboard
 class Hull(object):
     def __init__(self, corners):
         """
@@ -75,6 +76,19 @@ class Hull(object):
     def _get_side(self, slice):
         coords =  self.corners[slice].reshape(self._output_shape)
         return set(tuple(x) for x in coords)
+
+    def translate(self, x=0, y=0, z=0):
+        for i in range(len(self.corners)):
+            for j in range(len(self.corners[i])):
+                for k in range(len(self.corners[i][j])):
+                    self.corners[i][j][k] = utils.translate_point(self.corners[i][j][k], (x,y,z))
+
+    def rotate(self, x=0, y=0, z=0, degrees=True):
+        for i in range(len(self.corners)):
+            for j in range(len(self.corners[i])):
+                for k in range(len(self.corners[i][j])):
+                    self.corners[i][j][k] = utils.rotate_point(self.corners[i][j][k], (x,y,z), degrees)
+
 
     right  = partialmethod(_get_side, np.s_[1,:,:])
     left   = partialmethod(_get_side, np.s_[0,:,:])

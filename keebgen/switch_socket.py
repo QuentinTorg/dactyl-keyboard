@@ -2,62 +2,12 @@ from abc import ABC, abstractmethod
 import solid as sl
 from pathlib import Path
 
-import keebgen.transform_utils as utils
-from keebgen.geometry_base import Solid
+from keebgen.geometry_base import Solid, Hull
 
-# top, bottom, left, right are relative to the user sitting at the keyboard
+# when adding new sockets, the top of the socket should be coplanar with the X,Y plane
+# when the switch is installed, the keycap mounting feature should align with the Z axis
 
-# Socket is an abstract class that represents all implemented socket types
-# self._anchors list must contain the outer corner locations of the socket. The order starting
-#     with top face, rotating from top left around socket clockwise, then bottom face, rotating
-#     from top left around the socket clockwise
-# self.__socket is the solidpython object
-class Socket(Solid):
-    # when adding new sockets, the top of the socket should be coplanar with the X,Y plane
-    # when the switch is installed, the keycap mounting feature should align with the Z axis
-    @abstractmethod
-    def __init__(self):
-        super(Socket, self).__init__()
-
-    def anchors(self):
-        #TODO this is not finalized output format yet
-        # maybe need to apply multiple groups of anchors
-        # only returns the current corner locations
-        c = {}
-        c['top'] = set([
-            self._anchors[0],
-            self._anchors[1],
-            self._anchors[2],
-            self._anchors[3]])
-        c['bottom'] = set([
-            self._anchors[4],
-            self._anchors[5],
-            self._anchors[6],
-            self._anchors[7]])
-        c['left'] = set([
-            self._anchors[0],
-            self._anchors[3],
-            self._anchors[4],
-            self._anchors[7]])
-        c['right'] = set([
-            self._anchors[1],
-            self._anchors[2],
-            self._anchors[5],
-            self._anchors[6]])
-        c['front'] = set([
-            self._anchors[0],
-            self._anchors[1],
-            self._anchors[4],
-            self._anchors[5]])
-        c['back'] = set([
-            self._anchors[2],
-            self._anchors[3],
-            self._anchors[6],
-            self._anchors[7]])
-        return c
-
-
-class CherryMXSocket(Socket):
+class CherryMXSocket(Solid):
     def __init__(self, config, u=1):
         super(CherryMXSocket, self).__init__()
         # determines how much flat space to reserve around the switch
@@ -116,11 +66,11 @@ class CherryMXSocket(Socket):
         half_width = width/2.0
         half_length = length/2.0
         # self._anchors must be loaded in this order
-        self._anchors = [[-half_width,  half_length, top_z],
-                          [ half_width,  half_length, top_z],
-                          [ half_width, -half_length, top_z],
-                          [-half_width, -half_length, top_z],
-                          [-half_width,  half_length, bottom_z],
-                          [ half_width,  half_length, bottom_z],
-                          [ half_width, -half_length, bottom_z],
-                          [-half_width, -half_length, bottom_z]]
+        self._anchors = Hull([[-half_width,  half_length, top_z],
+                              [ half_width,  half_length, top_z],
+                              [ half_width, -half_length, top_z],
+                              [-half_width, -half_length, top_z],
+                              [-half_width,  half_length, bottom_z],
+                              [ half_width,  half_length, bottom_z],
+                              [ half_width, -half_length, bottom_z],
+                              [-half_width, -half_length, bottom_z]])
