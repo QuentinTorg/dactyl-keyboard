@@ -10,15 +10,15 @@ class Keycap(Solid):
     # the bottom face should be offset from the XY plane by the same distance that they would be offset from
     # a mounting plate if they were plate mounted switches
     @abstractmethod
-    def __init__(self, solid, anchors):
-        if type(self) is Keycap:
-            raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
-        self.__solid = solid
-        self.__anchors = anchors
-        super(Keycap, self).__init__(self.__solid, self.__anchors)
+    def __init__(self):
+        super(Keycap, self).__init__()
+
+    def anchors(self):
+        return self._anchors
 
 class OEM(Keycap):
     def __init__(self, r, u=1):
+        super(OEM, self).__init__()
         key_pitch = 19.0 # width between keys on standard board
 
         vertical_offset = 5.5 # vertical height from plate mount when mounted on switch
@@ -72,16 +72,16 @@ class OEM(Keycap):
         top_corners = utils.rotate_points(top_corners, [top_face_angle, 0, 0])
         top_corners = utils.translate_points(top_corners, [0, -top_offset_front, top_front_height])
 
-        key_corners = bottom_corners + top_corners
-        # must be numbered clockwise when looking at exterior
-        key_faces = [[3, 2, 1, 0], # bottom # good
-                     [0, 1, 5, 4], # front # good
-                     [4, 5, 6, 7], # top # good
-                     [1, 2, 6, 5], # right
-                     [2, 3, 7, 6], # back
-                     [3, 0, 4, 7]] # left
+        self._anchors = top_corners + bottom_corners
+        # faces must be numbered clockwise when looking at exterior
+        key_faces = [[2, 3, 0, 1], # bottom
+                     [1, 0, 4, 5], # front
+                     [5, 4, 7, 6], # top
+                     [2, 1, 5, 6], # right
+                     [3, 2, 6, 7], # back
+                     [0, 3, 7, 4]] # left
 
-        key_cap = sl.polyhedron(key_corners, key_faces)
+        key_cap = sl.polyhedron(self._anchors, key_faces)
 
 
         top_curve_radius = (top_curve_depth**2 + (top_width/2)**2)/(2 * top_curve_depth)
@@ -96,10 +96,8 @@ class OEM(Keycap):
         key_cap = sl.translate([0, 0, vertical_offset])(key_cap)
         key_cap = sl.color([50 / 255, 175 / 255, 255 / 255, 1])(key_cap)
 
-        self.__solid = key_cap
-        self.__anchors = []
-        # set the base class parameters
-        super(Keycap, self).__init__(self.__solid, self.__anchors)
+        self._solid = key_cap.set_modifier('%')
+        self._anchors = []
 
 
     def anchors(self):

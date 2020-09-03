@@ -6,59 +6,53 @@ from functools import partialmethod
 # base class for all solids
 class Solid(ABC):
     @abstractmethod
-    def __init__(self, solid, anchors):
-        if type(self) is Solid:
-            raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
-        self.__solid = solid
-        self.__anchors = anchors
+    def __init__(self):
+        pass
 
-    # child __init__() functions responsible for populating self.__solid and self.__anchors
+    # child __init__() functions responsible for populating self._solid and self._anchors
     def solid(self):
-        return self.__solid
+        return self._solid
 
     def translate(self, x=0, y=0, z=0):
-        self.__solid = sl.translate([x,y,z])(self.__solid)
-        self.__anchors = utils.translate_points(self.__anchors, [x,y,z])
+        self._solid = sl.translate([x,y,z])(self._solid)
+        self._anchors = utils.translate_points(self._anchors, [x,y,z])
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
-        self.__solid = sl.rotate([x, y, z])(self.__solid)
-        self.__anchors = utils.rotate_points(self.__anchors, [x,y,z], degrees)
+        self._solid = sl.rotate([x, y, z])(self._solid)
+        self._anchors = utils.rotate_points(self._anchors, [x,y,z], degrees)
 
     @abstractmethod
     def anchors(self):
-        raise Exception(f'{self.__class__.__name__}.anchors() is an abstract method and must be overridden by a child class.')
+        pass
 
 class Assembly(ABC):
     @abstractmethod
-    def __init__(self, parts, anchors):
-        if type(self) is Assembly:
-            raise Exception(f'{self.__class__.__name__} is an abstract class and cannot be instantiated directly.')
-        self.__parts = parts
-        self.__anchors = anchors
+    def __init__(self):
+        pass
 
-    # child __init__() functions responsible for populating self.__solid and self.__anchors
+    # child __init__() functions responsible for populating self._solid and self._anchors
     def solid(self):
         out_solid = None
-        for part in self.__parts.values():
+        for part in self._parts.values():
             out_solid += part.solid()
         return out_solid
 
     def translate(self, x=0, y=0, z=0):
-        self.__anchors = utils.translate_points(self.__anchors, [x,y,z])
-        for part in self.__parts.values():
+        self._anchors = utils.translate_points(self._anchors, [x,y,z])
+        for part in self._parts.values():
             part.translate(x, y, z)
 
     def rotate(self, x=0, y=0, z=0, degrees=True):
-        self.__anchors = utils.rotate_points(self.__anchors, [x,y,z], degrees)
-        for part in self.__parts.values():
+        self._anchors = utils.rotate_points(self._anchors, [x,y,z], degrees)
+        for part in self._parts.values():
             part.rotate(x, y, z)
 
     def anchors(self, part_name=None):
         # return assembly anchors if no part specified
         if part_name == None:
-            return self.__anchors
+            return self._anchors
         # return the anchors of the requested part
-        return self.__parts[part_name].anchors()
+        return self._parts[part_name].anchors()
 
 
 
