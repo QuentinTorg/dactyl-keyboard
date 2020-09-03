@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import solid as sl
 from pathlib import Path
 
-from . import transform_utils as utils
-from .geometry_base import Solid
+import keebgen.transform_utils as utils
+from keebgen.geometry_base import Solid
 
 # top, bottom, left, right are relative to the user sitting at the keyboard
 

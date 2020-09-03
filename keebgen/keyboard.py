@@ -1,4 +1,4 @@
-from .geometry_base import Assembly
+from keebgen.geometry_base import Assembly
 
 class Keyboard(Assembly):
     def __init__(self, parts, anchors):
